@@ -1,7 +1,7 @@
 ---
 - name: Backup remoto desde servidor Linux (cloud)
   hosts: localhost
-  gather_facts: no
+  gather_facts: yes
   vars:
     backup_src_paths:
       - "/root"
