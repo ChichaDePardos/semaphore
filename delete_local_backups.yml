@@ -1,0 +1,26 @@
+---
+- name: Borrar backups locales comprimidos ya subidos a Google Drive
+  hosts: localhost
+  gather_facts: no
+  vars:
+    backup_dir: "/mnt/backups"
+    extension: ".tar.gz"
+
+  tasks:
+    - name: Buscar archivos comprimidos .tar.gz en {{ backup_dir }}
+      find:
+        paths: "{{ backup_dir }}"
+        patterns: "*{{ extension }}"
+        recurse: yes
+      register: backup_files
+
+    - name: Mostrar archivos encontrados
+      debug:
+        msg: "{{ item.path }}"
+      loop: "{{ backup_files.files }}"
+
+    - name: Borrar archivos .tar.gz locales
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ backup_files.files }}"
