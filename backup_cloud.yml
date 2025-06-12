@@ -20,6 +20,7 @@
     backup_dest_base: "/mnt/backups/{{ target_host }}/{{ ansible_date_time.date }}"
     compressed_file_path: "/mnt/backups/{{ target_host }}_{{ ansible_date_time.date }}.tar.gz"
     rsync_log_path: "/var/log/ansible-backup"
+    rclone_config_path: "/root/.config/rclone/rclone.conf"  # Ruta real del config
 
   tasks:
     - name: Obtener remote_user y remote_host desde hostvars
@@ -69,6 +70,6 @@
         format: gz
         remove: yes
 
-    - name: Subir backup comprimido a Google Drive
+    - name: Subir backup comprimido a Google Drive usando config explícito
       ansible.builtin.command: >
-        rclone copy "{{ compressed_file_path }}" "gdrive:BACKUP/"
+        rclone --config={{ rclone_config_path }} copy "{{ compressed_file_path }}" "gdrive:BACKUP/"
