@@ -18,9 +18,11 @@
       debug:
         msg: "{{ item.path }}"
       loop: "{{ backup_files.files }}"
+      when: backup_files.matched > 0
 
     - name: Borrar archivos .tar.gz locales
       file:
         path: "{{ item.path }}"
         state: absent
       loop: "{{ backup_files.files }}"
+      when: backup_files.matched > 0
