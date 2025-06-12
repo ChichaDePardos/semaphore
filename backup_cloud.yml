@@ -3,7 +3,7 @@
   hosts: localhost
   gather_facts: yes
   vars:
-    target_host: srv_cloud  # ← clave: el nombre del host definido en tu inventory
+    target_host: srv_cloud  # ← nombre del host en el inventario
     backup_src_paths:
       - "/root"
       - "/home/chichadepardos"
@@ -27,8 +27,8 @@
     - name: Ejecutar backup rsync por cada ruta
       ansible.builtin.command: >
         rsync -aAXv --delete
-        -e "ssh -o StrictHostKeyChecking=no -tt"
-        --rsync-path="sudo rsync"
+        -e "ssh -o StrictHostKeyChecking=no"
+        --rsync-path='sudo -n rsync'
         {{ remote_user }}@{{ remote_host }}:{{ item }}
         {{ backup_dest_base }}/{{ item | basename }}
       loop: "{{ backup_src_paths }}"
