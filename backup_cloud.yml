@@ -27,7 +27,8 @@
     - name: Ejecutar backup rsync por cada ruta
       ansible.builtin.command: >
         rsync -aAXv --delete
-        -e "ssh -o StrictHostKeyChecking=no"
+        -e "ssh -o StrictHostKeyChecking=no -tt"
+        --rsync-path="sudo rsync"
         {{ remote_user }}@{{ remote_host }}:{{ item }}
         {{ backup_dest_base }}/{{ item | basename }}
       loop: "{{ backup_src_paths }}"
