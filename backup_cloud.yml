@@ -16,7 +16,7 @@
   tasks:
     - name: Obtener remote_user y remote_host desde hostvars
       set_fact:
-        remote_user: "{{ hostvars[target_host]['remote_user'] }}"
+        remote_user_var: "{{ hostvars[target_host]['remote_user'] }}"
         remote_host: "{{ hostvars[target_host]['remote_host'] }}"
 
     - name: Crear carpeta base para backups
@@ -31,13 +31,17 @@
         rsync -aAXv --delete
         -e "ssh -o StrictHostKeyChecking=no"
         --rsync-path='sudo -n rsync'
-        {{ remote_user }}@{{ remote_host }}:{{ item }}
+        {{ remote_user_var }}@{{ remote_host }}:{{ item }}
         {{ backup_dest_base }}/{{ item | basename }}
       loop: "{{ backup_src_paths }}"
 
-    - name: Comprimir backup en tar.gz
+    - name: Comprimir backup en tar.gz y eliminar carpeta sin comprimir
       ansible.builtin.archive:
         path: "{{ backup_dest_base }}"
         dest: "{{ compressed_file_path }}"
         format: gz
         remove: yes
+
+    - name: Subir backup comprimido a Google Drive
+      ansible.builtin.command: >
+        rclone copy "{{ compressed_file_path }}" "gdrive:BACKUP/"
