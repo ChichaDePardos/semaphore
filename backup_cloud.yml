@@ -3,7 +3,7 @@
   hosts: localhost
   gather_facts: yes
   vars:
-    target_host: srv_cloud  # ← definido en tu inventario
+    target_host: srv_cloud
     backup_src_paths:
       - "/root"
       - "/home/chichadepardos"
@@ -19,6 +19,7 @@
       - "/var/lib/docker/containers/*/shm"
     backup_dest_base: "/mnt/backups/{{ target_host }}/{{ ansible_date_time.date }}"
     compressed_file_path: "/mnt/backups/{{ target_host }}_{{ ansible_date_time.date }}.tar.gz"
+    rsync_log_path: "/var/log/ansible-backup"
 
   tasks:
     - name: Obtener remote_user y remote_host desde hostvars
@@ -33,9 +34,15 @@
         mode: '0755'
         recurse: yes
 
-    - name: Ejecutar backup rsync por cada ruta
+    - name: Asegurar existencia de carpeta de logs
+      ansible.builtin.file:
+        path: "{{ rsync_log_path }}"
+        state: directory
+        mode: '0755'
+
+    - name: Ejecutar backup rsync por cada ruta (sin verbose)
       ansible.builtin.shell: >
-        rsync -aAXv --delete
+        rsync -aAX --delete
         {% for pattern in exclude_patterns %}
         --exclude='{{ pattern }}'
         {% endfor %}
@@ -43,6 +50,7 @@
         --rsync-path='sudo -n rsync'
         {{ remote_user_var }}@{{ remote_host }}:{{ item }}
         {{ backup_dest_base }}/{{ item | basename }}
+        >> {{ rsync_log_path }}/rsync_{{ item | basename | regex_replace('[^a-zA-Z0-9]', '_') }}.log 2>&1
       loop: "{{ backup_src_paths }}"
 
     - name: Comprimir backup en tar.gz y eliminar carpeta sin comprimir
