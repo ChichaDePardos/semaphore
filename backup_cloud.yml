@@ -1,17 +1,21 @@
 ---
 - name: Backup remoto desde servidor Linux (cloud)
-  hosts: srv_cloud
+  hosts: localhost
   gather_facts: yes
   vars:
+    target_host: srv_cloud  # ← clave: el nombre del host definido en tu inventory
     backup_src_paths:
       - "/root"
       - "/home/chichadepardos"
       - "/var/lib/docker"
       - "/etc/docker"
       - "/etc/containers"
-    backup_dest_base: "/mnt/backups/{{ inventory_hostname }}/{{ ansible_date_time.date }}"
-
+    backup_dest_base: "/mnt/backups/{{ target_host }}/{{ ansible_date_time.date }}"
   tasks:
+    - name: Obtener remote_user y remote_host desde hostvars
+      set_fact:
+        remote_user: "{{ hostvars[target_host]['remote_user'] }}"
+        remote_host: "{{ hostvars[target_host]['remote_host'] }}"
 
     - name: Crear carpeta base para backups
       ansible.builtin.file:
