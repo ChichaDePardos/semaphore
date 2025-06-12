@@ -3,13 +3,20 @@
   hosts: localhost
   gather_facts: yes
   vars:
-    target_host: srv_cloud
+    target_host: srv_cloud  # ← definido en tu inventario
     backup_src_paths:
       - "/root"
       - "/home/chichadepardos"
       - "/var/lib/docker"
       - "/etc/docker"
       - "/etc/containers"
+    exclude_patterns:
+      - "*.log"
+      - "*.tmp"
+      - "lost+found"
+      - "tmp"
+      - "*.sock"
+      - "/var/lib/docker/containers/*/shm"
     backup_dest_base: "/mnt/backups/{{ target_host }}/{{ ansible_date_time.date }}"
     compressed_file_path: "/mnt/backups/{{ target_host }}_{{ ansible_date_time.date }}.tar.gz"
 
@@ -27,8 +34,11 @@
         recurse: yes
 
     - name: Ejecutar backup rsync por cada ruta
-      ansible.builtin.command: >
+      ansible.builtin.shell: >
         rsync -aAXv --delete
+        {% for pattern in exclude_patterns %}
+        --exclude='{{ pattern }}'
+        {% endfor %}
         -e "ssh -o StrictHostKeyChecking=no"
         --rsync-path='sudo -n rsync'
         {{ remote_user_var }}@{{ remote_host }}:{{ item }}
