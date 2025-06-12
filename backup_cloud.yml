@@ -3,7 +3,7 @@
   hosts: localhost
   gather_facts: yes
   vars:
-    target_host: srv_cloud  # ← nombre del host en el inventario
+    target_host: srv_cloud
     backup_src_paths:
       - "/root"
       - "/home/chichadepardos"
@@ -11,6 +11,8 @@
       - "/etc/docker"
       - "/etc/containers"
     backup_dest_base: "/mnt/backups/{{ target_host }}/{{ ansible_date_time.date }}"
+    compressed_file_path: "/mnt/backups/{{ target_host }}_{{ ansible_date_time.date }}.tar.gz"
+
   tasks:
     - name: Obtener remote_user y remote_host desde hostvars
       set_fact:
@@ -32,3 +34,10 @@
         {{ remote_user }}@{{ remote_host }}:{{ item }}
         {{ backup_dest_base }}/{{ item | basename }}
       loop: "{{ backup_src_paths }}"
+
+    - name: Comprimir backup en tar.gz
+      ansible.builtin.archive:
+        path: "{{ backup_dest_base }}"
+        dest: "{{ compressed_file_path }}"
+        format: gz
+        remove: yes
