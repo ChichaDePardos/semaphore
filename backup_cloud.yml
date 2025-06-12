@@ -26,13 +26,13 @@
       set_fact:
         remote_user_var: "{{ hostvars[target_host]['remote_user'] }}"
         remote_host: "{{ hostvars[target_host]['remote_host'] }}"
-
+        
     - name: Crear carpeta base para backups
       ansible.builtin.file:
         path: "{{ backup_dest_base }}"
         state: directory
         mode: '0755'
-        recurse: yes
+        force: yes
 
     - name: Asegurar existencia de carpeta de logs
       ansible.builtin.file:
