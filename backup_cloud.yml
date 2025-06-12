@@ -39,7 +39,7 @@
         state: directory
         mode: '0755'
 
-    - name: Ejecutar backup rsync por cada ruta (sin verbose, sin xattrs)
+    - name: Ejecutar backup rsync por cada ruta (con tolerancia a fallos)
       ansible.builtin.shell: >
         rsync -aAX --no-xattrs --delete
         {% for pattern in exclude_patterns %}
@@ -51,6 +51,16 @@
         {{ backup_dest_base }}/{{ item | basename }}
         >> {{ rsync_log_path }}/rsync_{{ item | basename | regex_replace('[^a-zA-Z0-9]', '_') }}.log 2>&1
       loop: "{{ backup_src_paths }}"
+      register: rsync_results
+      ignore_errors: true
+
+    - name: Mostrar resumen de errores de rsync
+      ansible.builtin.debug:
+        msg: >
+          Backup de {{ item.item }} falló con código {{ item.rc }}.
+          Revisa el log en {{ rsync_log_path }}/rsync_{{ item.item | basename | regex_replace('[^a-zA-Z0-9]', '_') }}.log
+      loop: "{{ rsync_results.results }}"
+      when: item.rc != 0
 
     - name: Comprimir backup en tar.gz y eliminar carpeta sin comprimir
       ansible.builtin.archive:
@@ -62,4 +72,3 @@
     - name: Subir backup comprimido a Google Drive
       ansible.builtin.command: >
         rclone copy "{{ compressed_file_path }}" "gdrive:BACKUP/"
-
