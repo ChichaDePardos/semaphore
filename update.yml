@@ -1,0 +1,20 @@
+mkdir -p /opt/semaphore-playbooks
+cd /opt/semaphore-playbooks
+
+cat <<EOF > update.yml
+- name: Actualizar todos los servidores
+  hosts: todos
+  become: true
+  tasks:
+    - name: Actualizar cache de apt
+      apt:
+        update_cache: yes
+
+    - name: Actualizar paquetes
+      apt:
+        upgrade: dist
+EOF
+
+git init
+git add .
+git commit -m "Playbook de actualización"
