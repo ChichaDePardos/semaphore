@@ -1,0 +1,29 @@
+---
+- name: Backup remoto desde servidor Linux (cloud)
+  hosts: localhost
+  gather_facts: no
+  vars:
+    backup_src_paths:
+      - "/root"
+      - "/home/chichadepardos"
+      - "/var/lib/docker"
+      - "/etc/docker"
+      - "/etc/containers"
+    backup_dest_base: "/mnt/backups/{{ inventory_hostname }}/{{ ansible_date_time.date }}"
+
+  tasks:
+
+    - name: Crear carpeta base para backups
+      ansible.builtin.file:
+        path: "{{ backup_dest_base }}"
+        state: directory
+        mode: '0755'
+        recurse: yes
+
+    - name: Ejecutar backup rsync por cada ruta
+      ansible.builtin.command: >
+        rsync -aAXv --delete
+        -e "ssh -o StrictHostKeyChecking=no"
+        {{ remote_user }}@{{ remote_host }}:{{ item }}
+        {{ backup_dest_base }}/{{ item | basename }}
+      loop: "{{ backup_src_paths }}"
