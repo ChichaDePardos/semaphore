@@ -1,11 +1,26 @@
 - name: Actualizar todos los servidores
   hosts: "{{ target_group | default('all') }}"
   become: true
+  gather_facts: true
+  ignore_unreachable: yes  # ← clave para no abortar en caso de fallos
   tasks:
+    - name: Mostrar host actual (solo informativo)
+      debug:
+        msg: "Ejecutando en {{ inventory_hostname }}"
+
     - name: Actualizar cache APT
-      apt:
+      ansible.builtin.apt:
         update_cache: yes
+      register: apt_update
+      ignore_errors: yes
 
     - name: Actualizar todos los paquetes
-      apt:
+      ansible.builtin.apt:
         upgrade: dist
+      when: apt_update is succeeded
+      ignore_errors: yes
+
+    - name: Marcar host como no actualizado si hubo errores
+      debug:
+        msg: "Este host tuvo un error durante la actualización."
+      when: apt_update is failed
