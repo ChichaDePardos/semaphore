@@ -38,13 +38,13 @@ Este script permite configurar de forma rápida y segura un nuevo servidor Linux
 Puedes ejecutarlo directamente desde GitHub con:
 
 ```bash
-bash <(curl -sSL https://raw.githubusercontent.com/ChichaDePardos/semaphore/main/init_agent.sh)
+bash <(curl -sSL https://raw.githubusercontent.com/ChichaDePardos/semaphore/main/init_ansible_agent.sh)
 ````
 
 O con `wget`:
 
 ```bash
-bash <(wget -qO- https://raw.githubusercontent.com/ChichaDePardos/semaphore/main/init_agent.sh)
+bash <(wget -qO- https://raw.githubusercontent.com/ChichaDePardos/semaphore/main/init_ansible_agent.sh)
 ```
 
 > ⚠️ Se recomienda ejecutar como `root` o mediante `sudo`.
